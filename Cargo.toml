@@ -17,6 +17,7 @@ anyhow = "1.0.102"
 
 [dependencies]
 server = { path = "crates/server" }
+config = { path = "crates/config" }
 tracing-subscriber.workspace = true
 tokio.workspace = true
 anyhow.workspace = true

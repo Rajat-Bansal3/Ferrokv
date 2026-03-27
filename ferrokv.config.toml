@@ -1,0 +1,25 @@
+[server]
+host = "127.0.0.1"
+port = 6379
+tcp_backlog = 511
+max_connections = 10000
+
+[storage]
+maxmemory = 0
+shard_count = 48
+eviction_policy = "no_eviction"
+ttl_sweep_interval_ms = 100
+eviction_sample_size = 5
+
+[persistence]
+aof_enabled = false
+rdb_enabled = false
+fsync = "no"
+aof_path = "./ferrokv.aof"
+rdb_path = "./ferrokv.rdb"
+rdb_save_interval_secs = 300
+aof_rewrite_min_size = 67108864
+
+[logging]
+level = "info"
+json = false
