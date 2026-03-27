@@ -1,6 +1,6 @@
 mod error;
 mod parser;
-// mod serializer;
+mod serializer;
 mod types;
 
 pub use error::ProtoError;
