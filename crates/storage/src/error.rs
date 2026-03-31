@@ -13,4 +13,6 @@ pub enum StorageError {
     ShardPoisoned,
     #[error("eviction failed")]
     EvictionFailed,
+    #[error("not enough memory is used")]
+    NotEnoughUsed,
 }

@@ -10,3 +10,4 @@ rand = "0.10.0"
 ahash = "0.8.12"
 thiserror.workspace = true
 fastrand = "2.3.0"
+config= {path = "../config"}

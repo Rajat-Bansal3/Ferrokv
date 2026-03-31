@@ -491,6 +491,7 @@ dependencies = [
  "ahash",
  "anyhow",
  "bytes",
+ "config",
  "fastrand",
  "rand",
  "thiserror",
