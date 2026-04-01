@@ -35,7 +35,18 @@ impl Entry {
             self.access_count += 1;
         }
     }
-    pub fn get_touch(&self) {}
+    pub fn get_touch(&mut self) {
+        self.last_accessed = Instant::now();
+        if self.access_count == 0 {
+            self.access_count = 1;
+            return;
+        }
+        let mut rng = rand::rng();
+        let threshold = self.access_count;
+        if rng.random_range(0..threshold) == 0 {
+            self.access_count += 1;
+        }
+    }
     pub fn memory_size(key: &Bytes, value: &StoreValue) -> usize {
         let value_size = match value {
             StoreValue::Bytes(b) => b.len(),

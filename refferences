@@ -1,3 +1,5 @@
 https://redis.io/docs/latest/develop/reference/protocol-spec/
 https://stackoverflow.com/questions/14576083/can-someone-explain-how-probabilistic-counting-works
 https://doc.rust-lang.org/std/collections/struct.HashMap.html#method.with_hasher
+https://doc.rust-lang.org/nomicon/data.html
+https://redis.io/docs/latest/commands/set/

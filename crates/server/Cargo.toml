@@ -7,3 +7,6 @@ edition = "2024"
 tracing.workspace = true
 tokio.workspace = true
 anyhow.workspace = true
+bytes.workspace = true
+proto = {path = "../proto"}
+storage = {path = "../storage"}

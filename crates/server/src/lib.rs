@@ -1,5 +1,6 @@
 use std::{thread::sleep, time::Duration};
-
+mod command;
+mod dispatcher;
 use anyhow::Ok;
 use tracing::{debug, info, instrument};
 

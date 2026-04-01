@@ -12,4 +12,8 @@ pub enum ProtoError {
     InvalidBoolean,
     #[error("invalid float")]
     InvalidFloat,
+    #[error("invalid command")]
+    InvalidCommand,
+    #[error("invalid number of args")]
+    WrongArity,
 }
