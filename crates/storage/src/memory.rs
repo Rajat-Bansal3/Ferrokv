@@ -26,6 +26,15 @@ impl Memory {
             .fetch_add(used, std::sync::atomic::Ordering::Relaxed);
         Ok(())
     }
+    pub fn is_allowed(&self, size: u64) -> bool {
+        if self.max == 0 {
+            return true;
+        }
+        if self.memory_used().saturating_add(size) > self.max {
+            return false;
+        }
+        return true;
+    }
     pub fn free(&self, size: u64) {
         let curr = self.used.load(std::sync::atomic::Ordering::Relaxed);
         let new = curr.saturating_sub(size);

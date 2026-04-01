@@ -58,12 +58,15 @@ impl Shard {
             }
         }
     }
-    pub fn set(&self, key: Bytes, entry: Entry) -> StorageResult<()> {
+    pub fn get_raw(&self, key: &Bytes) -> Option<Entry> {
+        self.data.read().unwrap().get(key).cloned()
+    }
+    pub fn set(&self, key: &Bytes, entry: Entry) -> StorageResult<bool> {
         let mut map = self.data.write().map_err(|_| StorageError::ShardPoisoned)?;
 
         let has_ttl = entry.expired_at.is_some();
-        let is_new_key = !map.contains_key(&key);
-        map.insert(key, entry);
+        let is_new_key = !map.contains_key(key);
+        map.insert(key.clone(), entry);
         if is_new_key {
             self.length
                 .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -77,13 +80,13 @@ impl Shard {
                 .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         }
 
-        Ok(())
+        Ok(is_new_key)
     }
-    pub fn del(&mut self, key: &Bytes) -> StorageResult<bool> {
+    pub fn del(&self, key: &Bytes) -> StorageResult<Option<Entry>> {
         let mut map = self.data.write().map_err(|_| StorageError::ShardPoisoned)?;
 
         match map.remove(key) {
-            None => Ok(false),
+            None => Ok(None),
             Some(entry) => {
                 self.length
                     .fetch_sub(1, std::sync::atomic::Ordering::Relaxed);
@@ -95,7 +98,7 @@ impl Shard {
                         .keys_with_ttl
                         .fetch_sub(1, std::sync::atomic::Ordering::Relaxed);
                 }
-                Ok(true)
+                Ok(Some(entry))
             }
         }
     }
@@ -106,7 +109,7 @@ impl Shard {
             Some(entry) => Ok(!entry.is_expired()),
         }
     }
-    pub fn flush(&mut self) -> StorageResult<()> {
+    pub fn flush(&self) -> StorageResult<()> {
         let mut map = self.data.write().map_err(|_| StorageError::ShardPoisoned)?;
         map.clear();
         self.length.store(0, std::sync::atomic::Ordering::Relaxed);
@@ -120,6 +123,16 @@ impl Shard {
     }
     pub fn len(&self) -> usize {
         self.length.load(std::sync::atomic::Ordering::Relaxed) as usize
+    }
+    pub fn keys(&self) -> StorageResult<Vec<Bytes>> {
+        let shard_keys: Vec<Bytes> = self
+            .data
+            .read()
+            .map_err(|_| StorageError::ShardPoisoned)?
+            .keys()
+            .cloned()
+            .collect();
+        Ok(shard_keys)
     }
     pub fn random_key(&self) -> StorageResult<Option<Bytes>> {
         let map = self.data.read().map_err(|_| StorageError::ShardPoisoned)?;

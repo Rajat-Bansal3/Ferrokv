@@ -22,6 +22,7 @@ impl Entry {
             None => false,
         }
     }
+    //TODO: refac to saperate out touch and get_touch for single lock aqui and non cosuming method
     pub fn touch(&mut self) {
         self.last_accessed = Instant::now();
         if self.access_count == 0 {
@@ -34,6 +35,7 @@ impl Entry {
             self.access_count += 1;
         }
     }
+    pub fn get_touch(&self) {}
     pub fn memory_size(key: &Bytes, value: &StoreValue) -> usize {
         let value_size = match value {
             StoreValue::Bytes(b) => b.len(),

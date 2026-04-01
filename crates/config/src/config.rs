@@ -8,7 +8,7 @@ pub enum FsyncPolicy {
     EverySec,
     No,
 }
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 pub enum EvictionPolicy {
     NoEviction,

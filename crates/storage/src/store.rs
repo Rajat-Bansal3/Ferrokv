@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bytes::Bytes;
 
-use crate::{StorageError, StoreStats};
+use crate::{StorageError, StoreStatsSnapshot};
 pub type StorageResult<T> = Result<T, StorageError>;
 #[derive(Clone)]
 pub enum StoreValue {
@@ -11,16 +11,16 @@ pub enum StoreValue {
 }
 
 pub trait Store: Send + Sync {
-    fn get(&self, key: &Bytes) -> Option<StoreValue>;
+    fn get(&self, key: &Bytes) -> StorageResult<Option<StoreValue>>;
     fn set(&self, key: Bytes, value: StoreValue, ttl: Option<Duration>) -> StorageResult<()>;
-    fn del(&self, key: &Bytes) -> bool;
-    fn exists(&self, key: &Bytes) -> bool;
-    fn ttl(&self, key: &Bytes) -> Option<Duration>;
-    fn persist(&self, key: &Bytes) -> bool;
+    fn del(&self, key: &Bytes) -> StorageResult<bool>;
+    fn exists(&self, key: &Bytes) -> StorageResult<bool>;
+    fn ttl(&self, key: &Bytes) -> StorageResult<Option<Duration>>;
+    fn persist(&self, key: &Bytes) -> StorageResult<bool>;
     fn flush(&self);
     fn len(&self) -> usize;
-    fn keys(&self) -> Vec<Bytes>;
-    fn stats(&self) -> StoreStats;
+    fn keys(&self) -> StorageResult<Vec<Bytes>>;
+    fn stats(&self) -> StoreStatsSnapshot;
 }
 
 impl StoreValue {
@@ -37,6 +37,12 @@ impl StoreValue {
         match self {
             StoreValue::Integer(n) => Bytes::from(n.to_string()),
             StoreValue::Bytes(bytes) => bytes,
+        }
+    }
+    pub fn get_size(&self) -> usize {
+        match self {
+            Self::Bytes(b) => b.len(),
+            Self::Integer(_) => size_of::<i64>(),
         }
     }
 }
