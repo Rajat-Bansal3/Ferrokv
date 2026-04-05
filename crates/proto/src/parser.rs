@@ -2,13 +2,13 @@ use bytes::Bytes;
 
 use crate::{ProtoError, RespValue};
 
-pub struct Parser {
-    buf: Bytes,
-    pos: usize,
+pub struct Parser<'a> {
+    buf: &'a [u8],
+    pub pos: usize,
 }
 
-impl Parser {
-    pub fn new(buf: Bytes) -> Self {
+impl<'a> Parser<'a> {
+    pub fn new(buf: &'a [u8]) -> Self {
         Parser { buf, pos: 0 }
     }
     pub fn parse(&mut self) -> Result<Option<RespValue>, ProtoError> {
@@ -86,7 +86,7 @@ impl Parser {
         match self.buf[self.pos..].windows(2).position(|w| w == b"\r\n") {
             None => Err(ProtoError::Incomplete),
             Some(end) => {
-                let line = self.buf.slice(self.pos..self.pos + end);
+                let line = Bytes::copy_from_slice(&self.buf[self.pos..self.pos + end]);
                 self.pos += end + 2;
                 Ok(line)
             }
@@ -167,7 +167,7 @@ impl Parser {
             return Err(ProtoError::Incomplete);
         }
 
-        let line = self.buf.slice(start..end);
+        let line = Bytes::copy_from_slice(&self.buf[start..end]);
         self.pos += len_string + 2;
         Ok(line)
     }
@@ -186,7 +186,7 @@ impl Parser {
         if end + 2 > self.buf.len() {
             return Err(ProtoError::Incomplete);
         }
-        let encoding = self.buf.slice(start..start + 3);
+        let encoding = Bytes::copy_from_slice(&self.buf[start..start + 3]);
 
         if self.buf[start + 3] != b':' {
             return Err(ProtoError::InvalidLength);
@@ -194,7 +194,7 @@ impl Parser {
 
         start += 4;
 
-        let line = self.buf.slice(start..end);
+        let line = Bytes::copy_from_slice(&self.buf[start..end]);
         self.pos = end + 2;
         Ok((encoding, line))
     }

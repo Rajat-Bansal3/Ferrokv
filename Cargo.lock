@@ -55,6 +55,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "client"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "proto",
+ "tokio",
+]
+
+[[package]]
 name = "config"
 version = "0.1.0"
 dependencies = [
@@ -189,6 +198,7 @@ dependencies = [
  "anyhow",
  "config",
  "server",
+ "storage",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -446,8 +456,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bytes",
+ "config",
  "proto",
  "storage",
+ "thiserror",
  "tokio",
  "tracing",
 ]

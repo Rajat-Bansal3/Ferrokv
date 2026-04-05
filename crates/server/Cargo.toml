@@ -8,5 +8,7 @@ tracing.workspace = true
 tokio.workspace = true
 anyhow.workspace = true
 bytes.workspace = true
+thiserror.workspace = true
 proto = {path = "../proto"}
 storage = {path = "../storage"}
+config = {path = "../config"}

@@ -1,13 +1,20 @@
-use std::{thread::sleep, time::Duration};
+use std::sync::Arc;
 mod command;
+mod connection;
 mod dispatcher;
+mod error;
+mod listener;
 use anyhow::Ok;
-use tracing::{debug, info, instrument};
+use config::ServerConfig;
+use proto::ProtoError;
+use storage::Store;
 
-#[instrument]
-pub async fn run() -> anyhow::Result<()> {
-    info!("starting server");
-    sleep(Duration::new(5, 0));
-    debug!("ran");
+use crate::listener::Listener;
+
+pub type ConnectionResult<T> = Result<T, ProtoError>;
+
+pub async fn run(config: ServerConfig, store: Arc<dyn Store>) -> anyhow::Result<()> {
+    let listner = Listener::new(config, store).await?;
+    listner.run().await?;
     Ok(())
 }

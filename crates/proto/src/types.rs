@@ -1,4 +1,5 @@
 use bytes::Bytes;
+#[derive(Debug)]
 pub enum RespValue {
     SimpleString(Bytes),
     SimpleError(Bytes),

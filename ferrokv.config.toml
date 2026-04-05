@@ -1,12 +1,12 @@
 [server]
 host = "127.0.0.1"
-port = 6379
+port = 50032
 tcp_backlog = 511
 max_connections = 10000
 
 [storage]
-maxmemory = 0
-shard_count = 48
+maxmemory = 524224
+shard_count = 32
 eviction_policy = "no_eviction"
 ttl_sweep_interval_ms = 100
 eviction_sample_size = 5
