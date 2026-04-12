@@ -15,4 +15,10 @@ pub enum StorageError {
     EvictionFailed,
     #[error("not enough memory is used")]
     NotEnoughUsed,
+    #[error("key size should be greater than 1 and less than 512 mb")]
+    InvalidKeyLen,
+    #[error("value size should be greater than 1 and less than 512 mb")]
+    InvalidValueLen,
+    #[error("key contains a null symbol")]
+    KeyContainsNull,
 }

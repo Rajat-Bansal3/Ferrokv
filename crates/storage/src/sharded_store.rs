@@ -99,6 +99,33 @@ impl Store for ShardedStore {
         Ok(())
     }
 
+    fn get_set(&self, key: Bytes, value: StoreValue) -> StorageResult<Option<StoreValue>> {
+        let shard = self.shard(&key);
+        let size = value.get_size();
+        self.check_memory_and_evict(size)?;
+        self.memory.alloc(size as u64)?;
+        let entry = Entry {
+            access_count: 0,
+            expired_at: None,
+            last_accessed: Instant::now(),
+            size_bytes: size,
+            value: value,
+        };
+        let returning = shard.get_set(&key, entry)?;
+        if let Some(ref old) = returning {
+            self.memory.free(old.get_size() as u64);
+        };
+        Ok(returning)
+    }
+
+    fn append(&self, key: &Bytes, value: Bytes) -> StorageResult<usize> {
+        let shard = self.shard(key);
+        let size = value.len();
+        self.check_memory_and_evict(size)?;
+        self.memory.alloc(size as u64)?;
+        shard.append(key, value)
+    }
+
     fn del(&self, key: &bytes::Bytes) -> StorageResult<bool> {
         let shard = self.shard(key);
 

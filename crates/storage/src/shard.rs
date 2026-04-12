@@ -1,12 +1,13 @@
 use std::{
     collections::HashMap,
     sync::{RwLock, atomic::AtomicU64},
+    time::Instant,
 };
 
 use ahash::RandomState;
-use bytes::Bytes;
+use bytes::{Bytes, BytesMut};
 
-use crate::{Entry, StorageError, StorageResult, StoreStats, StoreStatsSnapshot};
+use crate::{Entry, StorageError, StorageResult, StoreStats, StoreStatsSnapshot, StoreValue};
 
 #[repr(align(64))]
 pub struct Shard {
@@ -144,5 +145,82 @@ impl Shard {
     }
     pub fn snapshot_stats(&self) -> StoreStatsSnapshot {
         self.stats.snapshot()
+    }
+    pub fn get_set(&self, key: &Bytes, mut entry: Entry) -> StorageResult<Option<StoreValue>> {
+        let mut map = self.data.write().map_err(|_| StorageError::ShardPoisoned)?;
+        let mut prev_val = None;
+        let mut prev_ttl = None;
+
+        if let Some(etry) = map.get(key) {
+            prev_val = Some(etry.value.clone());
+            prev_ttl = etry.expired_at;
+        }
+
+        let is_new_key = !map.contains_key(key);
+        entry.expired_at = prev_ttl;
+        let has_ttl = entry.expired_at.is_some();
+        map.insert(key.clone(), entry);
+
+        if is_new_key {
+            self.length
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            self.stats
+                .total_keys
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+        if has_ttl {
+            self.stats
+                .keys_with_ttl
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+
+        Ok(prev_val)
+    }
+    pub fn append(&self, key: &Bytes, new_val: Bytes) -> StorageResult<usize> {
+        let mut map = self.data.write().map_err(|_| StorageError::ShardPoisoned)?;
+        let mut prev_ttl = None;
+
+        let access_count;
+        let size_bytes;
+
+        let concatenated = if let Some(etry) = map.get(key) {
+            prev_ttl = etry.expired_at;
+            access_count = etry.access_count;
+            let mut buf = BytesMut::from(etry.value.to_bytes().as_ref());
+            buf.extend_from_slice(&new_val);
+            buf.freeze()
+        } else {
+            access_count = 0;
+            new_val
+        };
+
+        let len = concatenated.len();
+        size_bytes = len;
+        let entry = Entry {
+            value: StoreValue::from_bytes(concatenated),
+            expired_at: prev_ttl,
+            last_accessed: Instant::now(),
+            access_count,
+            size_bytes,
+        };
+
+        let is_new_key = !map.contains_key(key);
+        let has_ttl = entry.expired_at.is_some();
+        map.insert(key.clone(), entry);
+
+        if is_new_key {
+            self.length
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            self.stats
+                .total_keys
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+        if has_ttl {
+            self.stats
+                .keys_with_ttl
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+
+        Ok(len)
     }
 }

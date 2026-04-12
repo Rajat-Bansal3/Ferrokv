@@ -21,6 +21,13 @@ pub trait Store: Send + Sync {
     fn len(&self) -> usize;
     fn keys(&self) -> StorageResult<Vec<Bytes>>;
     fn stats(&self) -> StoreStatsSnapshot;
+    fn get_set(&self, key: Bytes, value: StoreValue) -> StorageResult<Option<StoreValue>>;
+    fn append(&self, key: &Bytes, value: Bytes) -> StorageResult<usize>;
+    // fn rename(&self, key: &Bytes, new_key: Bytes) -> StorageResult<bool>;
+    // fn random_key(&self) -> StorageResult<Option<Bytes>>;
+    // fn key_type(&self, key: &Bytes) -> StorageResult<Option<ValueType>>;
+    // fn incr(&self, key: &Bytes, delta: i64) -> StorageResult<i64>;
+    // fn decr(&self, key: &Bytes, delta: i64) -> StorageResult<i64>;
 }
 
 impl StoreValue {
@@ -33,12 +40,13 @@ impl StoreValue {
             None => StoreValue::Bytes(raw),
         }
     }
-    pub fn to_bytes(self) -> Bytes {
+    pub fn to_bytes(&self) -> Bytes {
         match self {
             StoreValue::Integer(n) => Bytes::from(n.to_string()),
-            StoreValue::Bytes(bytes) => bytes,
+            StoreValue::Bytes(bytes) => bytes.clone(),
         }
     }
+
     pub fn get_size(&self) -> usize {
         match self {
             Self::Bytes(b) => b.len(),

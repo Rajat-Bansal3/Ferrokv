@@ -26,6 +26,7 @@ pub struct ServerConfig {
     pub port: u16,
     pub tcp_backlog: u32,
     pub max_connections: usize,
+    pub max_ideal_time: u64,
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct StorageConfig {
@@ -74,6 +75,7 @@ impl Default for ServerConfig {
             port: 6379,
             tcp_backlog: 511,
             max_connections: 10_000,
+            max_ideal_time: 300,
         }
     }
 }

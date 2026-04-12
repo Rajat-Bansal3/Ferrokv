@@ -1,6 +1,9 @@
-use std::sync::{
-    Arc,
-    atomic::{AtomicU64, AtomicUsize, Ordering},
+use std::{
+    sync::{
+        Arc,
+        atomic::{AtomicU64, AtomicUsize, Ordering},
+    },
+    time::Instant,
 };
 
 use config::ServerConfig;
@@ -48,9 +51,10 @@ impl Listener {
         self.active_connections.fetch_add(1, Ordering::Relaxed);
         let task_store = self.store.clone();
         let task_active_connections = self.active_connections.clone();
+        let max_ideal_time = self.config.max_ideal_time;
         tokio::spawn(async move {
             let mut connection = Connection::new(stream, task_store, id);
-            connection.run().await;
+            let _ = connection.run(max_ideal_time).await;
             task_active_connections.fetch_sub(1, Ordering::Relaxed);
         });
     }
