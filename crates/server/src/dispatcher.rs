@@ -125,7 +125,8 @@ pub fn dispatch(cmd: Command, store: &Arc<dyn Store>) -> RespValue {
                 Err(e) => return storage_err(e),
             };
             match store.get_set(key, StoreValue::from_bytes(value)) {
-                Ok(_) => RespValue::SimpleString(Bytes::from_static(b"OK")),
+                Ok(Some(prev_val)) => RespValue::SimpleString(prev_val.to_bytes()),
+                Ok(None) => RespValue::Null,
                 Err(e) => storage_err(e),
             }
         }
@@ -137,24 +138,24 @@ pub fn dispatch(cmd: Command, store: &Arc<dyn Store>) -> RespValue {
             }
             RespValue::SimpleString(Bytes::from_static(b"OK"))
         }
-        // Command::Incr { key } => match store.incr(key) {
-        //     Ok(_) => RespValue::Integer(1),
-        //     Err(e) => storage_err(e),
-        // },
-        // Command::Decr { key } => match store.decr(key) {
-        //     Ok(_) => RespValue::Integer(1),
-        //     Err(e) => storage_err(e),
-        // },
-        // Command::IncrBy { key } => match store.incr_by(key) {
-        //     Ok(_) => RespValue::Integer(1),
-        //     Err(e) => storage_err(e),
-        // },
-        // Command::DecrBy { key } => match store.decr_by(key) {
-        //     Ok(_) => RespValue::Integer(1),
-        //     Err(e) => storage_err(e),
-        // },
+        Command::Incr { key } => match store.incr(&key, 1) {
+            Ok(val) => RespValue::Integer(val),
+            Err(e) => storage_err(e),
+        },
+        Command::Decr { key } => match store.decr(&key, 1) {
+            Ok(val) => RespValue::Integer(val),
+            Err(e) => storage_err(e),
+        },
+        Command::IncrBy { key, delta } => match store.incr(&key, delta) {
+            Ok(val) => RespValue::Integer(val),
+            Err(e) => storage_err(e),
+        },
+        Command::DecrBy { key, delta } => match store.decr(&key, delta) {
+            Ok(val) => RespValue::Integer(val),
+            Err(e) => storage_err(e),
+        },
         Command::Append { key, value } => match store.append(&key, value) {
-            Ok(_) => RespValue::Integer(1),
+            Ok(val) => RespValue::Integer(val as i64),
             Err(e) => storage_err(e),
         },
         // Command::Rename { key, new_key } => match store.rename(key, new_key) {

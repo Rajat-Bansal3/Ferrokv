@@ -12,3 +12,4 @@ thiserror.workspace = true
 fastrand = "2.3.0"
 tokio.workspace = true 
 config= {path = "../config"}
+parking_lot.workspace = true

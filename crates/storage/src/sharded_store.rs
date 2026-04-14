@@ -6,6 +6,7 @@ use std::{
 
 use bytes::Bytes;
 use config::StorageConfig;
+use rand::seq::SliceRandom;
 
 use crate::{
     Entry, Eviction, Memory, Shard, StorageError, StorageResult, Store, StoreStats,
@@ -124,6 +125,37 @@ impl Store for ShardedStore {
         self.check_memory_and_evict(size)?;
         self.memory.alloc(size as u64)?;
         shard.append(key, value)
+    }
+
+    // fn rename(&self, key: &Bytes, new_key: Bytes) -> StorageResult<bool> {
+    //     let random_bytes: [u8; 32] = rand::rng().random();
+    //     let shard = self.shard(&Bytes::from_static(&random_bytes.));
+    //     shard.random_key();
+
+    //     Ok(true)
+    // }
+
+    fn random_key(&self) -> StorageResult<Option<Bytes>> {
+        let mut shard_idx: Vec<usize> = (0..self.shard_count).collect();
+        let mut rng = rand::rng();
+        shard_idx.shuffle(&mut rng);
+
+        for idx in shard_idx {
+            let shard = &self.shards[idx];
+            if let Some(key) = shard.random_key()? {
+                return Ok(Some(key));
+            }
+        }
+        Ok(None)
+    }
+
+    fn decr(&self, key: &Bytes, delta: i64) -> StorageResult<i64> {
+        let shard = self.shard(key);
+        shard.increment(key, -delta)
+    }
+    fn incr(&self, key: &Bytes, delta: i64) -> StorageResult<i64> {
+        let shard = self.shard(key);
+        shard.increment(key, delta)
     }
 
     fn del(&self, key: &bytes::Bytes) -> StorageResult<bool> {

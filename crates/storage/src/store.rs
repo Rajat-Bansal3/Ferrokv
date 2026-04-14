@@ -23,11 +23,11 @@ pub trait Store: Send + Sync {
     fn stats(&self) -> StoreStatsSnapshot;
     fn get_set(&self, key: Bytes, value: StoreValue) -> StorageResult<Option<StoreValue>>;
     fn append(&self, key: &Bytes, value: Bytes) -> StorageResult<usize>;
+    fn random_key(&self) -> StorageResult<Option<Bytes>>;
     // fn rename(&self, key: &Bytes, new_key: Bytes) -> StorageResult<bool>;
-    // fn random_key(&self) -> StorageResult<Option<Bytes>>;
     // fn key_type(&self, key: &Bytes) -> StorageResult<Option<ValueType>>;
-    // fn incr(&self, key: &Bytes, delta: i64) -> StorageResult<i64>;
-    // fn decr(&self, key: &Bytes, delta: i64) -> StorageResult<i64>;
+    fn incr(&self, key: &Bytes, delta: i64) -> StorageResult<i64>;
+    fn decr(&self, key: &Bytes, delta: i64) -> StorageResult<i64>;
 }
 
 impl StoreValue {

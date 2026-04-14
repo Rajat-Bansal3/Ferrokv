@@ -551,6 +551,17 @@ dependencies = [
 [[package]]
 name = "persist"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bytes",
+ "config",
+ "parking_lot",
+ "proto",
+ "server",
+ "storage",
+ "thiserror",
+ "tokio",
+]
 
 [[package]]
 name = "pin-project-lite"
@@ -852,6 +863,7 @@ dependencies = [
  "bytes",
  "config",
  "fastrand",
+ "parking_lot",
  "rand",
  "thiserror",
  "tokio",

@@ -21,4 +21,10 @@ pub enum StorageError {
     InvalidValueLen,
     #[error("key contains a null symbol")]
     KeyContainsNull,
+    #[error("not and integer")]
+    NotInteger,
+    #[error("integer overflow")]
+    IntegerOverflow,
+    #[error("key expired")]
+    KeyExpired,
 }

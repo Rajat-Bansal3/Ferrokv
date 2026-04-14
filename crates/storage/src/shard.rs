@@ -223,4 +223,54 @@ impl Shard {
 
         Ok(len)
     }
+    pub fn increment(&self, key: &Bytes, delta: i64) -> StorageResult<i64> {
+        let mut map = self.data.write().map_err(|_| StorageError::ShardPoisoned)?;
+
+        let (current, expired_at, access_count) = match map.get(key) {
+            Some(entry) => {
+                if entry.is_expired() {
+                    return Err(StorageError::KeyExpired);
+                }
+                let val = match &entry.value {
+                    StoreValue::Integer(i) => *i,
+                    StoreValue::Bytes(b) => std::str::from_utf8(b)
+                        .map_err(|_| StorageError::NotInteger)?
+                        .parse::<i64>()
+                        .map_err(|_| StorageError::NotInteger)?,
+                };
+                (val, entry.expired_at, entry.access_count)
+            }
+            None => (0, None, 0), // redis default for missing key is 0
+        };
+
+        let new_val = current
+            .checked_add(delta)
+            .ok_or(StorageError::IntegerOverflow)?;
+
+        let is_new_key = !map.contains_key(key);
+        let entry = Entry {
+            value: StoreValue::Integer(new_val),
+            expired_at,
+            last_accessed: Instant::now(),
+            access_count,
+            size_bytes: 8,
+        };
+
+        map.insert(key.clone(), entry);
+
+        if is_new_key {
+            self.length
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            self.stats
+                .total_keys
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+        if expired_at.is_some() {
+            self.stats
+                .keys_with_ttl
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+
+        Ok(new_val)
+    }
 }

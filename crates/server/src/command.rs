@@ -151,6 +151,7 @@ impl Command {
             _ => Err(ProtoError::InvalidCommand),
         }
     }
+
     fn parse_get(parts: Vec<RespValue>) -> Result<Command, ProtoError> {
         if parts.len() != 2 {
             return Err(ProtoError::WrongArity);

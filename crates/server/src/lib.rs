@@ -1,5 +1,5 @@
 use std::sync::Arc;
-mod command;
+pub mod command;
 mod connection;
 mod dispatcher;
 mod error;

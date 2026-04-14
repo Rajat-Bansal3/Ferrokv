@@ -1,4 +1,5 @@
-use std::{sync::Mutex, time::Instant};
+use parking_lot::Mutex;
+use std::time::Instant;
 
 use ahash::{HashSet, HashSetExt};
 use bytes::Bytes;
@@ -35,27 +36,21 @@ impl Timer {
     }
     pub fn insert(&self, key: Bytes, expires_at: Instant) {
         let slot = self.bucket_for(expires_at);
-        self.inner.lock().unwrap().buckets[slot].insert(key);
+        self.inner.lock().buckets[slot].insert(key);
     }
     pub fn remove(&self, key: &Bytes, expires_at: Instant) {
         let slot = self.bucket_for(expires_at);
-        self.inner.lock().unwrap().buckets[slot].remove(key);
+        self.inner.lock().buckets[slot].remove(key);
     }
     pub fn advance(&self) -> Vec<Bytes> {
-        let mut inner = self.inner.lock().unwrap();
+        let mut inner = self.inner.lock();
         let idx = inner.cur_idx;
         let keys: Vec<Bytes> = inner.buckets[idx].drain().collect();
         inner.cur_idx = (inner.cur_idx + 1) % self.total_buckets;
         keys
     }
     pub fn len(&self) -> usize {
-        self.inner
-            .lock()
-            .unwrap()
-            .buckets
-            .iter()
-            .map(|set| set.len())
-            .sum()
+        self.inner.lock().buckets.iter().map(|set| set.len()).sum()
     }
     pub fn is_empty(&self) -> bool {
         self.len() == 0

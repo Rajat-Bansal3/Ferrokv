@@ -4,3 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+bytes.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+tokio.workspace = true
+parking_lot.workspace = true
+server ={ path = "../server"}
+proto = {path = "../proto"}
+config = {path = "../config"}
+storage = {path = "../storage"}

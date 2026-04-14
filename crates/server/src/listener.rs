@@ -1,9 +1,6 @@
-use std::{
-    sync::{
-        Arc,
-        atomic::{AtomicU64, AtomicUsize, Ordering},
-    },
-    time::Instant,
+use std::sync::{
+    Arc,
+    atomic::{AtomicU64, AtomicUsize, Ordering},
 };
 
 use config::ServerConfig;
