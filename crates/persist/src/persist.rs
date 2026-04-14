@@ -22,7 +22,7 @@ impl PersistHandle {
             config.aof_path.as_str(),
         ))?));
 
-        let policy = config.fsync.clone();
+        let policy: FsyncPolicy = config.fsync.clone();
         let join_handler =
             AofFsyncer::new(policy.clone(), Duration::from_secs(1)).spawn(writer.clone());
 
