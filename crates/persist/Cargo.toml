@@ -9,7 +9,7 @@ thiserror.workspace = true
 anyhow.workspace = true
 tokio.workspace = true
 parking_lot.workspace = true
-server ={ path = "../server"}
 proto = {path = "../proto"}
 config = {path = "../config"}
 storage = {path = "../storage"}
+command = {path = "../command"}

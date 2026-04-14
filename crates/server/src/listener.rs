@@ -3,7 +3,8 @@ use std::sync::{
     atomic::{AtomicU64, AtomicUsize, Ordering},
 };
 
-use config::ServerConfig;
+use config::{Config, ServerConfig};
+use persist::persist::PersistHandle;
 use storage::Store;
 use tokio::net::{TcpListener, TcpStream};
 
@@ -15,19 +16,23 @@ pub struct Listener {
     config: ServerConfig,
     active_connections: Arc<AtomicUsize>,
     next_conn_id: AtomicU64,
+    persist: Arc<PersistHandle>,
 }
 impl Listener {
-    pub async fn new(config: ServerConfig, store: Arc<dyn Store>) -> Result<Self, ServerError> {
-        println!("{}:{}", config.host, config.port);
-        let listner = tokio::net::TcpListener::bind(format!("{}:{}", config.host, config.port))
-            .await
-            .map_err(|_| ServerError::ErrorInitialisingLister)?;
+    pub async fn new(config: Config, store: Arc<dyn Store>) -> Result<Self, ServerError> {
+        let listner =
+            tokio::net::TcpListener::bind(format!("{}:{}", config.server.host, config.server.port))
+                .await
+                .map_err(|_| ServerError::ErrorInitialisingLister)?;
+        let persist_handler = PersistHandle::new(&config.persistence)
+            .map_err(|_| ServerError::ErrorInitilisingPersistance)?;
         Ok(Listener {
             listener: listner,
             store: store,
-            config: config,
+            config: config.server,
             active_connections: Arc::new(AtomicUsize::new(0)),
             next_conn_id: AtomicU64::new(0),
+            persist: Arc::new(persist_handler),
         })
     }
     pub async fn run(&self) -> Result<(), ServerError> {
@@ -49,9 +54,10 @@ impl Listener {
         let task_store = self.store.clone();
         let task_active_connections = self.active_connections.clone();
         let max_ideal_time = self.config.max_ideal_time;
+        let persist_handler = self.persist.clone();
         tokio::spawn(async move {
             let mut connection = Connection::new(stream, task_store, id);
-            let _ = connection.run(max_ideal_time).await;
+            let _ = connection.run(max_ideal_time, &persist_handler).await;
             task_active_connections.fetch_sub(1, Ordering::Relaxed);
         });
     }

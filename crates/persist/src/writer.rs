@@ -1,5 +1,5 @@
 use bytes::BytesMut;
-use server::command::Command;
+use command::Command;
 use std::{
     fs::{File, OpenOptions},
     io::{BufWriter, Write},

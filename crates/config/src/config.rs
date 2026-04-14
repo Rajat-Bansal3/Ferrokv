@@ -28,7 +28,7 @@ pub struct ServerConfig {
     pub max_connections: usize,
     pub max_ideal_time: u64,
 }
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct StorageConfig {
     pub maxmemory: usize,
     pub shard_count: usize,

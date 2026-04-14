@@ -10,4 +10,6 @@ pub enum ServerError {
     MaxConnections,
     #[error("error accepting connection onto listner")]
     ErrorAcceptingConnections,
+    #[error("error initialising persistance")]
+    ErrorInitilisingPersistance,
 }

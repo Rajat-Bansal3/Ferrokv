@@ -1,5 +1,5 @@
 use bytes::{BufMut, BytesMut};
-use server::command::Command;
+use command::Command;
 
 pub fn serialize_command(cmd: &Command, buf: &mut BytesMut) {
     match cmd {

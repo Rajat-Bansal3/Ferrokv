@@ -1,8 +1,8 @@
 use std::{path::Path, sync::Arc, time::Duration};
 
+use command::Command;
 use config::{FsyncPolicy, PersistenceConfig};
 use parking_lot::Mutex;
-use server::command::Command;
 use tokio::task::JoinHandle;
 
 use crate::{

@@ -12,3 +12,5 @@ thiserror.workspace = true
 proto = {path = "../proto"}
 storage = {path = "../storage"}
 config = {path = "../config"}
+command = {path = "../command"}
+persist = {path = "../persist"}

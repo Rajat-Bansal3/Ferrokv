@@ -16,4 +16,8 @@ pub enum ProtoError {
     InvalidCommand,
     #[error("invalid number of args")]
     WrongArity,
+    #[error("error replaying commands")]
+    ErrorReplaying,
+    #[error("error initialising persistane")]
+    PersistanceInitialisation,
 }

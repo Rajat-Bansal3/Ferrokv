@@ -3,6 +3,7 @@ host = "127.0.0.1"
 port = 50032
 tcp_backlog = 511
 max_connections = 10000
+max_ideal_time = 500
 
 [storage]
 maxmemory = 524224
@@ -14,7 +15,7 @@ eviction_sample_size = 5
 [persistence]
 aof_enabled = false
 rdb_enabled = false
-fsync = "no"
+fsync = "always"
 aof_path = "./ferrokv.aof"
 rdb_path = "./ferrokv.rdb"
 rdb_save_interval_secs = 300

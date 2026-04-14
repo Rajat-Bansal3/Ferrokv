@@ -1,3 +1,4 @@
+use persist::persist::PersistHandle;
 use proto::{Parser, ProtoError, RespValue};
 use std::{
     sync::Arc,
@@ -8,7 +9,9 @@ use tokio::{
     net::TcpStream,
 };
 
-use crate::{ConnectionResult, command::Command, dispatcher::dispatch};
+use command::Command;
+
+use crate::{ConnectionResult, dispatcher::dispatch};
 use bytes::{Buf, BytesMut};
 use storage::Store;
 use tokio::io::{ReadHalf, WriteHalf};
@@ -35,7 +38,11 @@ impl Connection {
             last_activity: Instant::now(),
         }
     }
-    pub async fn run(&mut self, max_ideal_time: u64) -> ConnectionResult<()> {
+    pub async fn run(
+        &mut self,
+        max_ideal_time: u64,
+        persist_handler: &PersistHandle,
+    ) -> ConnectionResult<()> {
         loop {
             self.read_buf.reserve(4096);
             let read_result = tokio::time::timeout(
@@ -68,7 +75,7 @@ impl Connection {
                                 drop(parser);
                                 self.read_buf.advance(consumed);
                                 let res = match Command::from_resp(value) {
-                                    Ok(cmd) => dispatch(cmd, &self.store),
+                                    Ok(cmd) => dispatch(cmd, &self.store, persist_handler),
                                     Err(_) => RespValue::SimpleError(bytes::Bytes::from_static(
                                         b"ERR bad command",
                                     )),

@@ -18,14 +18,12 @@ async fn main() -> anyhow::Result<()> {
 
     let mut buf = vec![0u8; 4096];
     let n = stream.read(&mut buf).await?;
-    println!("{}", std::str::from_utf8(&buf[..n])?);
     let mut parser = proto::Parser::new(std::str::from_utf8(&buf[..n]).unwrap().as_bytes());
     loop {
         match parser.parse() {
             Ok(Some(value)) => println!("{:?}", value),
             Ok(None) => break,
             Err(e) => {
-                println!("parse error: {:?}", e);
                 break;
             }
         }

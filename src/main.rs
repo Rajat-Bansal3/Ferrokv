@@ -7,6 +7,7 @@ async fn main() -> anyhow::Result<()> {
         .with_max_level(tracing::Level::DEBUG)
         .init();
     let config = config::Config::load(Some("/home/rajat/Documents/kv_store/ferrokv.config.toml"))?;
+    // let config = config::Config::default();
     let store = ShardedStore::new(config.storage);
-    server::run(config.server, store).await
+    server::run(config, store).await
 }

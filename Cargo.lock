@@ -177,6 +177,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "command"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "proto",
+]
+
+[[package]]
 name = "config"
 version = "0.1.0"
 dependencies = [
@@ -554,10 +562,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bytes",
+ "command",
  "config",
  "parking_lot",
  "proto",
- "server",
  "storage",
  "thiserror",
  "tokio",
@@ -805,7 +813,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bytes",
+ "command",
  "config",
+ "persist",
  "proto",
  "storage",
  "thiserror",
