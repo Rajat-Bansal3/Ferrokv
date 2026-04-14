@@ -88,7 +88,7 @@ pub fn dispatch(cmd: Command, store: &Arc<dyn Store>, persist: &PersistHandle) -
             }
             match store.set(key.clone(), StoreValue::from_bytes(value.clone()), ttl) {
                 Ok(_) => {
-                    persist.log_command(&Command::Set { key, value, ttl }).ok();
+                    persist.log_command(&Command::Set { key, value, ttl });
                     RespValue::SimpleString(Bytes::from_static(b"OK"))
                 }
                 Err(e) => storage_err(e),
@@ -105,9 +105,7 @@ pub fn dispatch(cmd: Command, store: &Arc<dyn Store>, persist: &PersistHandle) -
                 Some(ttl),
             ) {
                 Ok(_) => {
-                    persist
-                        .log_command(&Command::SetEx { key, value, ttl })
-                        .ok();
+                    persist.log_command(&Command::SetEx { key, value, ttl });
                     RespValue::SimpleString(Bytes::from_static(b"OK"))
                 }
                 Err(e) => storage_err(e),
@@ -130,7 +128,7 @@ pub fn dispatch(cmd: Command, store: &Arc<dyn Store>, persist: &PersistHandle) -
             }
             match store.get_set(key.clone(), StoreValue::from_bytes(value.clone())) {
                 Ok(prev) => {
-                    persist.log_command(&Command::GetSet { key, value }).ok();
+                    persist.log_command(&Command::GetSet { key, value });
                     match prev {
                         Some(val) => RespValue::BlobString(val.to_bytes()),
                         None => RespValue::Null,
@@ -149,40 +147,40 @@ pub fn dispatch(cmd: Command, store: &Arc<dyn Store>, persist: &PersistHandle) -
                     return storage_err(e);
                 }
             }
-            persist.log_command(&Command::MSet { pairs }).ok();
+            persist.log_command(&Command::MSet { pairs });
             RespValue::SimpleString(Bytes::from_static(b"OK"))
         }
         Command::Incr { key } => match store.incr(&key, 1) {
             Ok(val) => {
-                persist.log_command(&Command::Incr { key }).ok();
+                persist.log_command(&Command::Incr { key });
                 RespValue::Integer(val)
             }
             Err(e) => storage_err(e),
         },
         Command::Decr { key } => match store.decr(&key, 1) {
             Ok(val) => {
-                persist.log_command(&Command::Decr { key }).ok();
+                persist.log_command(&Command::Decr { key });
                 RespValue::Integer(val)
             }
             Err(e) => storage_err(e),
         },
         Command::IncrBy { key, delta } => match store.incr(&key, delta) {
             Ok(val) => {
-                persist.log_command(&Command::IncrBy { key, delta }).ok();
+                persist.log_command(&Command::IncrBy { key, delta });
                 RespValue::Integer(val)
             }
             Err(e) => storage_err(e),
         },
         Command::DecrBy { key, delta } => match store.decr(&key, delta) {
             Ok(val) => {
-                persist.log_command(&Command::DecrBy { key, delta }).ok();
+                persist.log_command(&Command::DecrBy { key, delta });
                 RespValue::Integer(val)
             }
             Err(e) => storage_err(e),
         },
         Command::Append { key, value } => match store.append(&key, value.clone()) {
             Ok(len) => {
-                persist.log_command(&Command::Append { key, value }).ok();
+                persist.log_command(&Command::Append { key, value });
                 RespValue::Integer(len as i64)
             }
             Err(e) => storage_err(e),
@@ -198,13 +196,13 @@ pub fn dispatch(cmd: Command, store: &Arc<dyn Store>, persist: &PersistHandle) -
                 .filter(|&deleted| deleted)
                 .count();
             if count > 0 {
-                persist.log_command(&Command::Del { keys }).ok();
+                persist.log_command(&Command::Del { keys });
             }
             RespValue::Integer(count as i64)
         }
         Command::Persist { key } => match store.persist(&key) {
             Ok(true) => {
-                persist.log_command(&Command::Persist { key }).ok();
+                persist.log_command(&Command::Persist { key });
                 RespValue::Integer(1)
             }
             Ok(false) => RespValue::Integer(0),
@@ -212,7 +210,7 @@ pub fn dispatch(cmd: Command, store: &Arc<dyn Store>, persist: &PersistHandle) -
         },
         Command::Flush => {
             store.flush();
-            persist.log_command(&Command::Flush).ok();
+            persist.log_command(&Command::Flush);
             RespValue::SimpleString(Bytes::from_static(b"OK"))
         }
         Command::Ping { message } => match message {

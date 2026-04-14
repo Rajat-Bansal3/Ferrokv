@@ -1,4 +1,4 @@
-use bytes::BytesMut;
+use bytes::{Bytes, BytesMut};
 use command::Command;
 use std::{
     fs::{File, OpenOptions},
@@ -31,12 +31,12 @@ impl AofWriter {
         })
     }
 
-    pub fn append(&mut self, command: &Command) -> AofResponse<()> {
-        let mut buf = BytesMut::new();
-        serialize_command(command, &mut buf);
+    pub fn append(&mut self, command: &Bytes) -> AofResponse<()> {
+        // let mut buf = BytesMut::new();
+        // serialize_command(command, &mut buf);
         self.bytes_written += self
             .file
-            .write(&buf.freeze())
+            .write(&command)
             .map_err(|_| AOFError::ErrorWrittingToFile)?;
         Ok(())
     }
